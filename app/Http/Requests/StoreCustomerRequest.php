@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCustomerRequest extends FormRequest
@@ -11,7 +12,7 @@ class StoreCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +23,28 @@ class StoreCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required'],
+            'type' => ['required', Rule::in('individual', 'business')],
+            'email' => ['required', 'email'],
+            'address' => ['required'],
+            'city' => ['required'],
+            'country' => ['required'],
+            'postalCode' => ['required']
         ];
     }
+
+    /**
+     * prepareForValidation prepares or sanitizes any data from the request before 
+     * applying validation rules (executing rules method)
+     */
+    protected function prepareForValidation()
+    {
+        // Merge new input into the current request's input array
+        $this->merge([
+            // Example use:
+            // 'slug' => Str::slug($this->slug) // slug field is gonna be changed with Str's static slug and be validated
+            'postal_code' => $this->postalCode
+        ]);
+    }
+
 }

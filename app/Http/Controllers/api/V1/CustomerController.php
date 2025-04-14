@@ -9,8 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\V1CustomerResource;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\V1CustomerCollection;
-use App\Http\Requests\V1StoreCustomerRequest;
-
+use App\Http\Requests\StoreCustomerRequest;
 
 class CustomerController extends Controller
 {
@@ -37,9 +36,9 @@ class CustomerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(V1StoreCustomerRequest $request)
+    public function store(StoreCustomerRequest $request)
     {
-        // Create resource and return to the client
+        // Create resource and return json to the client
         return new V1CustomerResource(Customer::create($request->all()));
     }
 
@@ -63,7 +62,10 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        //
+        $customerId = $customer->id;
+        $customer->update($request->all());
+
+        return new V1CustomerResource(Customer::where('id', $customerId)->first());
     }
 
     /**
