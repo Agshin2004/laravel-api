@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\api\V1;
 
+use App\Http\Requests\BulkStoreInvoiceRequest;
 use App\Models\Invoice;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Filters\V1\InvoicesFilter;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\V1InvoiceResource;
+use App\Http\Resources\InvoiceResource;
+use App\Http\Resources\InvoiceCollection;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
-use App\Http\Resources\V1InvoiceCollection;
 
 
 class InvoiceController extends Controller
@@ -17,14 +19,14 @@ class InvoiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): V1InvoiceCollection
+    public function index(Request $request): InvoiceCollection
     {
         $filter = new InvoicesFilter();
         $filterItems = $filter->transform($request);
 
         // If $filterItems === null then where will be omitted because when where accepts [] it returns all 
         $invoices = Invoice::where($filterItems);
-        return new V1InvoiceCollection($invoices->paginate()->appends($request->query())); // appends() adds a set of query string values to the paginator
+        return new InvoiceCollection($invoices->paginate()->appends($request->query())); // appends() adds a set of query string values to the paginator
     }
 
     /**
@@ -43,12 +45,26 @@ class InvoiceController extends Controller
         //
     }
 
+    public function bulkStore(BulkStoreInvoiceRequest $request)
+    {
+        // Create a collection from the given value
+        $bulk = collect($request->all())->map(function ($arr, $key) {
+        // Merge data from request and add two additional created_at and updated_at fields
+            return array_merge(
+                Arr::except($arr, ['customerId', 'billedDate', 'paidDate']), // Get all of the given array except for a specified array of keys
+                ['created_at' => now(), 'updated_at' => now()]
+            );
+        });
+
+        Invoice::insert($bulk->toArray());
+    }
+
     /**
      * Display the specified resource.
      */
-    public function show(Invoice $invoice)
+    public function show(Invoice $invoice): InvoiceResource
     {
-        return new V1InvoiceResource($invoice);
+        return new InvoiceResource($invoice);
     }
 
     /**

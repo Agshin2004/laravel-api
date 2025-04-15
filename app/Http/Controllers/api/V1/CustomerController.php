@@ -6,9 +6,9 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Filters\V1\CustomersFilter;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\V1CustomerResource;
+use App\Http\Resources\CustomerResource;
 use App\Http\Requests\UpdateCustomerRequest;
-use App\Http\Resources\V1CustomerCollection;
+use App\Http\Resources\CustomerCollection;
 use App\Http\Requests\StoreCustomerRequest;
 
 class CustomerController extends Controller
@@ -16,7 +16,7 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): V1CustomerCollection
+    public function index(Request $request): CustomerCollection
     {
         $filter = new CustomersFilter();
         $filterItems = $filter->transform($request); // -> [['column', 'operator', 'value']]
@@ -29,7 +29,7 @@ class CustomerController extends Controller
             $customers = $customers->with('invoices'); // invoices is method on Customer model (acts like field)
         }
 
-        return new V1CustomerCollection($customers->paginate()->appends($request->query()));
+        return new CustomerCollection($customers->paginate()->appends($request->query()));
     }
 
 
@@ -39,22 +39,22 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         // Create resource and return json to the client
-        return new V1CustomerResource(Customer::create($request->all()));
+        return new CustomerResource(Customer::create($request->all()));
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Customer $customer): V1CustomerResource
+    public function show(Customer $customer): CustomerResource
     {
         $includeInvoices = request()->query('includeInvoices');
 
         if ($includeInvoices) {
             // Only load relationship if haven't been loaded.
-            return new V1CustomerResource($customer->loadMissing('invoices'));
+            return new CustomerResource($customer->loadMissing('invoices'));
         }
 
-        return new V1CustomerResource($customer);
+        return new CustomerResource($customer);
     }
 
     /**
@@ -65,7 +65,7 @@ class CustomerController extends Controller
         $customerId = $customer->id;
         $customer->update($request->all());
 
-        return new V1CustomerResource(Customer::where('id', $customerId)->first());
+        return new CustomerResource(Customer::where('id', $customerId)->first());
     }
 
     /**

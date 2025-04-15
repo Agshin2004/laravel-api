@@ -3,13 +3,13 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use App\Http\Resources\V1CustomerResource;
+use App\Http\Resources\InvoiceResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class V1CustomerCollection extends ResourceCollection
+class InvoiceCollection extends ResourceCollection
 {
     // Overriding $collects so collection will use same format as resource
-    public $collects = V1CustomerResource::class;
+    public $collects = InvoiceResource::class;
 
     public function toArray(Request $request): array
     {
